@@ -1,0 +1,81 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <omp.h>
+
+long long int serial_iter_fibo(long int n)
+{
+    // nth-order starts from 1
+    if (n == 1) { return n;}
+    if (n < 1) { return 0;}
+    // Create an array for memoization
+    long long int sum[n];
+    long int i;
+    // Base cases
+    sum[0] = 1; // F0 = 1
+    sum[1] = 1; // F1 = 1
+    for(i = 2; i<n; i++){
+        sum[i] = sum[i-1] + sum[i-2];
+    }
+    // (n-1)-0 + 1 = n ==> n-th element
+    return sum[n-1];
+    
+}
+
+long long int serial_fast_fib(long int n)
+{
+    // Create an array for memoization
+    long long int sum[n];
+    long int i;
+    // Base cases
+    sum[0] = 1; // F0 = 1
+    sum[1] = 1; // F1 = 1
+    for(i = 2; i<n; i++){
+        sum[i] = sum[i-1] + sum[i-2];
+    }
+    return sum[n-1];
+}
+long long int parallel_sum_of_fibo(long int n)
+{
+    if (n < 0)return 0;
+    if (n < 2)return 1;
+    if (n <=10000)return serial_fast_fib(n);
+    
+    long long int x, y;
+    
+    #pragma omp task shared(x) if(n>10000)
+    {
+       x = serial_fast_fib(n-1);
+    }
+    #pragma omp task shared(y) if (n>10000)
+    {
+       y = serial_fast_fib(n-2);
+    }
+    #pragma omp taskwait
+    return x+y;
+}
+
+void fibo_run(){
+    long int n = 80000;
+    long long int sum1, sum2;
+    double start, end, end2;
+    
+    start = omp_get_wtime();
+    sum1 = serial_iter_fibo(n);
+    end = omp_get_wtime();
+    sum2 = parallel_sum_of_fibo(n);
+    end2 = omp_get_wtime();
+
+    printf("Result of serial sum: %lld\n", sum1);
+    printf("Running time: %f seconds\n", end - start);
+    printf("Result of parallel sum: %lld\n", sum2);
+    printf("Running time: %f seconds\n", end2 - end);
+    
+}
+
+int main(int argc, char* argv[])
+{
+    fibo_run();
+    
+    return 0;
+}
+
