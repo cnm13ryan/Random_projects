@@ -14,7 +14,7 @@ Projects include:
 * 
 * [Simple histogram](#simple-histogram)
 *
-*[Print Binary numbers](#print-binary-numbers)
+* [Print Binary numbers](#print-binary-numbers)
 *
 *
 *
