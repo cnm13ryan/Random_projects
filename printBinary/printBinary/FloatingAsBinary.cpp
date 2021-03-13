@@ -1,8 +1,7 @@
 //  FloatingAsBinary.cpp
 //  {L} printBinary
 //  {T} 3.14159
-//  Created by Chan Nok Man on 12/3/2021.
-//
+
 
 /*
  The bits inside of floats and doubles are divided into three regions:
