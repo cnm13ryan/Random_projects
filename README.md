@@ -5,7 +5,7 @@
 
 ## General info
 The repositrory contains what I find interesting in general.
-There may exist some errors, or maybe some better implementation.
+There may exist some errors, or maybe there exist some better implementation.
 Anyway, feel free to leave me a message if there are any problems.
 	
 ## Projects
