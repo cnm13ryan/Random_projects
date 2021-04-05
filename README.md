@@ -16,7 +16,7 @@ Projects include:
 *
 * [Print Binary numbers](#print-binary-numbers)
 *
-* [Calculating Pi by MPI](#calculating-pi-by-mpi)
+* [Calculating PI by MPI](#calculating-pi-by-mpi)
 *
 *
 
@@ -37,7 +37,7 @@ accoridng to the IEEE standard.
 
 Note: The code itself may not be complete, since I am still checking.
 
-### Caculating PI by MPI
+### Calculating PI by MPI
 This is just a very naive implementation of MPI fundamentals
 
 
