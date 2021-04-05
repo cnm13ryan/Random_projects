@@ -1,9 +1,5 @@
 //
-//  pi_calculationmpi.c
-//
-//
-//  Created by Chan Nok Man on 5/4/2021.
-//
+//  pi_calculation_mpi.c
 
 #include <mpi.h>
 #include <stdio.h>
