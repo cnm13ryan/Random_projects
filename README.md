@@ -18,7 +18,7 @@ Projects include:
 *
 * [Calculating PI by MPI](#calculating-pi-by-mpi)
 *
-* [Scenario 1 Material Balances using Python GAMS API](#material-balances-python-api)
+* [Material Balances using Python GAMS API](#material-balances-using-python-gams-api)
 
 
 
@@ -41,7 +41,7 @@ Note: The code itself may not be complete, since I am still checking.
 This is just a very naive implementation of MPI fundamentals
 
 
-### Scenario 1 Material Balances using Python GAMS API
+### Material Balances using Python GAMS API
 This is just an exemplar process of Acetone production given some process description
 
 
