@@ -20,9 +20,9 @@ class Chem_Species(object):
     def P_satur(self, T):
         """Compute the saturation pressure given the known temperature """
         raise Exception('P_satur() has not been defined for ' + self.name);
+        
 
-
-     
+ 
 def pressure_ratio(list_Pp, P_sys=1200):
     """Function to calculate the pressure ratio"""
     
@@ -34,13 +34,10 @@ def pressure_ratio(list_Pp, P_sys=1200):
         i += 1;
     return Pr_i;
 
-
-
-def calcuate_composition(list_com, list_Pr):
+def cal_phase_com(list_com, list_Pr):
     """ Function to calculate the composition of the species in their respective phases"""
     
-    X_i = [];
-    Y_i = [];
+    X_i, Y_i = [], [];
     i = 0;
     while i < len(list_com):
         x_result = list_com[i] / (1 + list_Pr[i]);
@@ -49,7 +46,6 @@ def calcuate_composition(list_com, list_Pr):
         Y_i.append(round(y_result, 5));
         i += 1;
     return X_i, Y_i;
-
 
 
 def compute_partial_P(Tsys=20):
@@ -63,51 +59,43 @@ def compute_partial_P(Tsys=20):
     w_fn   =  Chem_Species('Water',  lambda T: 10**(8.05573 - 1723.64/(T + 233.076)));
     ipa_fn =  Chem_Species('IPA',  lambda T: 10**(7.83056 - 1483.3/(T + 217.413)));
     
-    # Partial Pressure of the three components (Acetone, Water, IPA)
-    act_Pp = act_fn.P_satur(Tsys); # Expected: 183.3057966039555
-    w_Pp = w_fn.P_satur(Tsys); # Expected: 17.578005499499085
-    ipa_Pp = ipa_fn.P_satur(Tsys); # Expected: 38.2646426454334
+    # Partial Pressure of Acetone, Water, IPA
+    act_Pp = act_fn.P_satur(Tsys);  # Expected: 183.3057966039555
+    w_Pp = w_fn.P_satur(Tsys);      # Expected: 17.578005499499085
+    ipa_Pp = ipa_fn.P_satur(Tsys);  # Expected: 38.2646426454334
     return act_Pp, w_Pp, ipa_Pp;
-    
-    
-  
-[x, y, z] = compute_partial_P();
-print([x,y,z]);
+
+def sum_list(list1):
+    """Return the summation of all the elements in the list
+    >>> sum_list(range(1,100))
+    4950
+    """
+    tot = sum(list1);
+    return tot;
+
+# Create a list of Composition of Species ['Acetone', 'Water', 'IPA']
+com_S4_i = [0.376, 0.206, 0.0417];
 
 
-# Temperature and Pressure of the system
-T_sys = 20; # degree Celsius
-P_sys = 1200; # mm Hg
+# Calculate the composition of the species in binary phases
+X_4i, Y_4i = cal_phase_com(com_S4_i, 
+                           pressure_ratio(
+                               compute_partial_P(20)));
+
+# Verify the composition of hydrogen
+Y_H2 = 1 - sum_list(Y_4i) - sum_list(X_4i);
+# display(Y_H2);
+
+# Append the hydrogen composition to the list Y_4i
+Y_4i.append(round(Y_H2,5))
+
+# Print the output of the compositions
+print(f" X_4i \tX_act \tX_w \tX_ipa\n\t{X_4i} \n\n Y_4i \tY_act \tY_w \tY_ipa \tY_H2\n\t{Y_4i} ");
+
+# Verify if all the compositions of individual species add up to one
+sum(X_4i+Y_4i);
 
 
-# Create a list of Vapour Pressure 
-vp_S4 = [S4_act_Pp, S4_w_Pp, S4_ipa_Pp];
-# print(vp_S4)
-
-
-# Create a list of Composition of Species
-composition_S4_i = [0.376, 0.206, 0.0417];
-
-
-# Create a list of Pressure ratios
-Pp_i = pressure_ratio(vp_S4)
-# print(Pp_i);
-
-
-# Calculate the composition of the different species
-X_S4, Y_S4 = calcuate_composition(composition_S4_i, Pp_i  )
-print(f" X_S4 \tX_act \tX_w \tX_ipa\n\t{X_S4} \n\n Y_S4 \tY_act \tY_w \tY_ipa\n\t{Y_S4} ")
-
-hydrogen_composition = 1 - composition_S4_i[0] - composition_S4_i[1] - composition_S4_i[2]
-print(f"\nY_S4_Hydrogen is: {hydrogen_composition}");
-
-
-# For purposes of checking
-hydrogen_composition1 = 1 - X_S4[0] - X_S4[1] - X_S4[2] - Y_S4[0] - Y_S4[1] - Y_S4[2]
-
-check = hydrogen_composition - hydrogen_composition1;
-
-if check != 0: print("Error in Calculation");
 
 
 
