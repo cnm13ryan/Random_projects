@@ -16,15 +16,13 @@ class Chem_Species(object):
     def __init__(self, name='no name', P_satur=lambda T: null):
         self.name = name;
         self.P_satur = P_satur;
-    
    
     def P_satur(self, T):
         """Compute the saturation pressure given the known temperature """
         raise Exception('P_satur() has not been defined for ' + self.name);
 
 
-        
-
+     
 def pressure_ratio(list_Pp, P_sys=1200):
     """Function to calculate the pressure ratio"""
     
@@ -35,6 +33,8 @@ def pressure_ratio(list_Pp, P_sys=1200):
         Pr_i.append(result);
         i += 1;
     return Pr_i;
+
+
 
 def calcuate_composition(list_com, list_Pr):
     """ Function to calculate the composition of the species in their respective phases"""
@@ -51,6 +51,7 @@ def calcuate_composition(list_com, list_Pr):
     return X_i, Y_i;
 
 
+
 def compute_partial_P(Tsys=20):
     """Return the partial pressure of the compund
     
@@ -62,22 +63,16 @@ def compute_partial_P(Tsys=20):
     w_fn   =  Chem_Species('Water',  lambda T: 10**(8.05573 - 1723.64/(T + 233.076)));
     ipa_fn =  Chem_Species('IPA',  lambda T: 10**(7.83056 - 1483.3/(T + 217.413)));
     
-    
     # Partial Pressure of the three components (Acetone, Water, IPA)
     act_Pp = act_fn.P_satur(Tsys); # Expected: 183.3057966039555
     w_Pp = w_fn.P_satur(Tsys); # Expected: 17.578005499499085
     ipa_Pp = ipa_fn.P_satur(Tsys); # Expected: 38.2646426454334
     return act_Pp, w_Pp, ipa_Pp;
     
+    
+  
 [x, y, z] = compute_partial_P();
 print([x,y,z]);
-
-
-
-# Partial Pressure of the three components (Acetone, Water, IPA)
-S4_act_Pp = act_Pp.P_satur(T_sys); # Expected: 183.3057966039555
-S4_w_Pp = w_Pp.P_satur(T_sys); # Expected: 17.578005499499085
-S4_ipa_Pp = ipa_Pp.P_satur(T_sys); # Expected: 38.2646426454334
 
 
 # Temperature and Pressure of the system
