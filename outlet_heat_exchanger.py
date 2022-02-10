@@ -22,6 +22,7 @@ class Chem_Species(object):
         """Compute the saturation pressure given the known temperature """
         raise Exception('P_satur() has not been defined for ' + self.name);
 
+
         
 
 def pressure_ratio(list_Pp, P_sys=1200):
@@ -50,11 +51,27 @@ def calcuate_composition(list_com, list_Pr):
     return X_i, Y_i;
 
 
+def compute_partial_P(Tsys=20):
+    """Return the partial pressure of the compund
+    
+    >>> compute_partial_P(20)
+    (183.3057966039555, 17.578005499499085, 38.2646426454334)
+    """
+    # Antoine coefficient referenced from Yaw's handbook 
+    act_fn =  Chem_Species('Acetone',  lambda T: 10**(7.31414 - 1315.67/(T + 240.479)));
+    w_fn   =  Chem_Species('Water',  lambda T: 10**(8.05573 - 1723.64/(T + 233.076)));
+    ipa_fn =  Chem_Species('IPA',  lambda T: 10**(7.83056 - 1483.3/(T + 217.413)));
+    
+    
+    # Partial Pressure of the three components (Acetone, Water, IPA)
+    act_Pp = act_fn.P_satur(Tsys); # Expected: 183.3057966039555
+    w_Pp = w_fn.P_satur(Tsys); # Expected: 17.578005499499085
+    ipa_Pp = ipa_fn.P_satur(Tsys); # Expected: 38.2646426454334
+    return act_Pp, w_Pp, ipa_Pp;
+    
+[x, y, z] = compute_partial_P();
+print([x,y,z]);
 
-# Antoine coefficient referenced from Yaw's handbook 
-act_Pp =  Chem_Species('Acetone',  lambda T: 10**(7.31414 - 1315.67/(T + 240.479)));
-w_Pp   =  Chem_Species('Water',  lambda T: 10**(8.05573 - 1723.64/(T + 233.076)));
-ipa_Pp =  Chem_Species('IPA',  lambda T: 10**(7.83056 - 1483.3/(T + 217.413)));
 
 
 # Partial Pressure of the three components (Acetone, Water, IPA)
