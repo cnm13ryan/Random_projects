@@ -17,8 +17,7 @@ Projects include:
 * [Print Binary numbers](#print-binary-numbers)
 *
 * [Calculating PI by MPI](#calculating-pi-by-mpi)
-*
-* [Material Balances using Python GAMS API](#material-balances-using-python-gams-api)
+* 
 
 
 
@@ -41,8 +40,7 @@ Note: The code itself may not be complete, since I am still checking.
 This is just a very naive implementation of MPI fundamentals
 
 
-### Material Balances using Python GAMS API
-This is just an exemplar process of Acetone production given some process description
+
 
 
 
