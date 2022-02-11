@@ -1,0 +1,528 @@
+
+import sympy as sym
+sym.init_printing()
+
+
+class Chem_Species(object):
+    
+    def __init__(self, name='no name', P_satur=lambda T: null):
+        self.name = name;
+        self.P_satur = P_satur;
+   
+    def P_satur(self, T):
+        """Compute the saturation pressure given the known temperature """
+        raise Exception('P_satur() has not been defined for ' + self.name);
+
+
+def pressure_ratio(list_Pp, P_sys=1200):
+    """Function to calculate the pressure ratio (partial pressure / system pressure)"""
+    
+    Pr_i = [];
+    i = 0;
+    while i < len(list_Pp):
+        result = list_Pp[i] / P_sys;
+        Pr_i.append(round(result,4));
+        i += 1;
+    return Pr_i;
+
+def cal_phase_com(list_com):
+    """ Function to calculate the composition of the species in their respective phases"""
+    X_i, Y_i = [], [];
+    def calculate(list_Pr):
+        i = 0;
+        while i < len(list_com):
+            x_result = list_com[i] / (1 + list_Pr[i]);
+            y_result = list_com[i] - x_result;
+            X_i.append(round(x_result, 4));
+            Y_i.append(round(y_result, 4));
+            i += 1;
+        # Verify if all the compositions of individual species add up to one
+        if sum(X_i + Y_i) != 1:
+            return "ERROR";
+        else:
+            return X_i, Y_i;
+    return calculate;
+
+
+def compute_partial_P(Tsys=20):
+    """Return the partial pressure of the compund
+    
+    >>> compute_partial_P(20)
+    (183.3057966039555, 17.578005499499085, 38.2646426454334)
+    """
+    # Antoine coefficient referenced from Yaw's handbook 
+    act_fn =  Chem_Species('Acetone',  lambda T: 10**(7.31414 - 1315.67/(T + 240.479)));
+    w_fn   =  Chem_Species('Water',  lambda T: 10**(8.05573 - 1723.64/(T + 233.076)));
+    ipa_fn =  Chem_Species('IPA',  lambda T: 10**(7.83056 - 1483.3/(T + 217.413)));
+    
+    # Partial Pressure of Acetone, Water, IPA
+    act_Pp = act_fn.P_satur(Tsys);  # Expected: 183.3057966039555
+    w_Pp = w_fn.P_satur(Tsys);      # Expected: 17.578005499499085
+    ipa_Pp = ipa_fn.P_satur(Tsys);  # Expected: 38.2646426454334
+    return act_Pp, w_Pp, ipa_Pp;
+
+
+
+
+
+def sum_list(list1):
+    """Return the summation of all the elements in the list
+    >>> sum_list(range(1,100))
+    4950
+    """
+    tot = sum(list1);
+    return tot;
+
+
+# Definitions
+# 
+# N1: total molar rate in stream 1
+#     
+# N2: total molar rate in stream 2 
+# 
+# n1: IPA
+#     
+# n2: Water
+#     
+# n3: Acetone
+#     
+# n4: Hydrogen
+# 
+# n1x: IPA in liquid phase
+#     
+# n1x_1: IPA in liquid phase in Stream 1
+#     
+# n3y_2: Acetone in vapour phase in Stream 2
+# 
+
+# Stream Variables are defined as below.
+# 
+# The stream variables are systematically created using the Sympy 'var' function, 
+# 
+# and added to the list 'streams'.
+# 
+
+
+
+
+stream_table = []
+
+
+# Inlet stream to Vaporizer (S1)
+stream_table.append(sym.var('n1x_1 n2x_1 N1'));
+
+# Outlet stream from Vaporizer to Tubular Reactor (S2)
+stream_table.append(sym.var('n1x_2 n1y_2 n2x_2 n2y_2 N2'));
+
+# Outlet stream from Tubular Reactor to two consecutive Heat Exchangers (S3)
+stream_table.append(sym.var('n1y_3 n2y_3 n3y_3 n4y_3 N3'));
+
+# Outlet stream from two consecutive Heat Exchangers to Flash Separator (S4)
+stream_table.append(sym.var('n1x_4 n1y_4 n2x_4 n2y_4 n3x_4 n3y_4 n4x_4 n4y_4 N4'))  
+
+# Outlet stream from Flash Separator to absorber (Vapour Stream S5)
+stream_table.append(sym.var('n1x_5 n1y_5 n2x_5 n2y_5 n3x_5 n3y_5 n4x_5 n4y_5 N5'))  
+
+# Outlet stream from Flash Separator to mixer (Liquid Stream S6)
+stream_table.append(sym.var('n1x_6 n1y_6 n2x_6 n2y_6 n3x_6 n3y_6 n4x_6 n4y_6 N6')) 
+
+# Injected water stream to absorber (S7)
+stream_table.append(sym.var('n2x_7 N7'))  
+
+# Outlet stream from Absorber to mixer (Liquid Stream S8)
+stream_table.append(sym.var('n1x_8 n1y_8 n2x_8 n2y_8 n3x_8 n3y_8 n4x_8 n4y_8 N8'))  
+
+# Outlet stream from Absorber to Storage Tank (Vapour Stream S9)
+stream_table.append(sym.var('n1x_9 n1y_9 n2x_9 n2y_9 n3x_9 n3y_9 n4x_9 n4y_9 N9'))  
+
+# Outlet stream from Mixer to 1st Distillation column (Mixed vapour/liquid Stream S10)
+stream_table.append(sym.var('n1x_10 n1y_10 n2x_10 n2y_10 n3x_10 n3y_10 n4x_10 n4y_10 N10')) 
+
+# Bottom outlet stream from 1st Distillation column to 2nd Distillation Column (S11)
+stream_table.append(sym.var('n1x_11 n1y_11 n2x_11 n2y_11 n3x_11 n3y_11 n4x_11 n4y_11 N11')) 
+
+# Top Outlet stream from 1st Distillation column to Storage Tank (S12)
+stream_table.append(sym.var('n1x_12 n1y_12 n2x_12 n2y_12 n3x_12 n3y_12 n4x_12 n4y_12 N12'))  
+
+# Bottom outlet stream from 2nd Distillation column to waste water treatment (S13)
+stream_table.append(sym.var('n1x_13 n1y_13 n2x_13 n2y_13 n3x_13 n3y_13 n4x_13 n4y_13 N13'))  
+
+# Top Outlet stream from 2nd Distillation column to Storage Tank (S14)
+stream_table.append(sym.var('n1x_14 n1y_14 n2x_14 n2y_14 n3x_14 n3y_14 n4x_14 n4y_14'))  
+
+
+# display(stream_table)
+
+extents = [sym.var('X')];
+# display(extents);
+
+variables = [];
+
+for x in extents: variables.append(x);
+
+for s in stream_table:
+    for v in s:
+        variables.append(v);
+#display(variables);
+
+
+
+
+# Specifications
+
+
+
+vaporiser_unit = [
+    
+    # Inlet stream to Vaporizer (S1)
+    sym.Eq(51.96, N1),
+    sym.Eq(n1x_1, N1*0.67),
+    sym.Eq(n2x_1, N1*0.33)]
+    
+
+
+reactor_unit = [
+    
+    # Outlet stream from vaporiser (S2)
+    sym.Eq(n1y_2, n1x_1),
+    sym.Eq(n2y_2, n2x_1),
+    
+    sym.Eq(N2, N1),
+    sym.Eq(n1x_2, n1x_1 - n1y_2),
+    sym.Eq(n2x_2, n2x_1 - n2y_2),
+    
+    # Outlet stream from Tubular Reactor to two consecutive Heat Exchangers (S3)
+    sym.Eq(N3, N2),
+    sym.Eq(n3y_3, 0.9*n1y_2), # Single pass conversion is fixed at 90%
+    
+    sym.Eq(n4y_3, n3y_3), # Both acetone and hydrogen produced have same molar ratio
+    
+    sym.Eq(n1y_3, 0.1*n1y_2),
+    sym.Eq(n2y_3, n2y_2)
+
+] 
+
+equations = vaporiser_unit +  reactor_unit 
+
+
+soln = sym.solve(equations)
+
+for k in soln.keys():
+    print("Variable {0:4s}:  {1:8.2f}".format(str(k),round(soln[k],2)))
+
+
+
+# Heat exchanger calculations outsourced to another section
+
+# Create a list of Composition of Speciesin Stream 4 ['Acetone', 'Water', 'IPA']
+
+com_S4_i = [0.376, 0.206, 0.0417];
+
+
+
+# Based on previous result of Stream 3
+list_2 = [31.33/83.29, 17.15/83.29, 3.48/83.29];
+# print(list_2)
+x = 0
+while x < len(list_2):
+    list_2[x] = round(list_2[x],3);
+    x += 1;
+# print(list_2)
+
+
+# Heat exchanger calculations outsourced to another section
+
+# Based on previous result of Stream 3
+
+# Create a list of Composition of Speciesin Stream 4 ['Acetone', 'Water', 'IPA']
+
+com_S4_i = [31.33/83.29, 17.15/83.29, 3.48/83.29]; # print(list_2)
+
+x = 0
+while x < len(list_2):
+    list_2[x] = round(list_2[x],3);
+    x += 1;
+    
+# Compute the partial pressure of the species
+[vp_act, vp_w, vp_ipa] = compute_partial_P(20);
+
+list4 = [vp_act, vp_w, vp_ipa];
+
+# Calculate the composition of the species in binary phases
+X_4i, Y_4i = cal_phase_com(com_S4_i)(pressure_ratio(list4));
+
+
+# Verify the composition of hydrogen
+Y_H2 = 1 - sum_list(Y_4i) - sum_list(X_4i);
+
+# Append the hydrogen composition to the list Y_4i
+Y_4i.append(round(Y_H2,4));
+
+print(f" X_4i \tX_act \tX_w \tX_ipa\n\t{X_4i} \n\n Y_4i \tY_act \tY_w \tY_ipa \tY_H2\n\t{Y_4i} ");
+
+
+
+# Heat exchanger calculations done separated, as above
+# since involving multi-component Raoult's law and Antoine equation
+
+heat_ex_spec = [
+    sym.Eq(N4, N3),
+    sym.Eq(n1x_4, 0.404*N4),
+    sym.Eq(n2x_4, 0.203*N4),
+    sym.Eq(n3x_4, 0.3262*N4),
+    sym.Eq(n4x_4, 0.0),
+    
+    sym.Eq(n1y_4, n1y_3 - n1x_4),
+    sym.Eq(n2y_4, n2y_3 - n2x_4),
+    sym.Eq(n3y_4, n3y_3 - n3x_4),
+    sym.Eq(n4y_4, n4y_3 - n4x_4),
+]
+
+
+
+specifications = vaporiser_spec +  reactor_spec + heat_ex_spec 
+
+
+
+soln = sym.solve(specifications)
+
+for k in soln.keys():
+    print("Variable {0:4s}:  {1:8.2f}".format(str(k),round(soln[k],2)))
+
+
+flash_separ_spec = [
+    
+    # Flash separator to absorber
+    sym.Eq(0, n4y_5 - n4y_4),  # Consists of all available hydrogen
+    sym.Eq(0, N5 - 0.43*N4), # 43% of inlet stream
+    sym.Eq(n1y_5, 0.02*(N5 - n4y_5)), # IPA consist of 2% mol/mol of remaining mixture
+    sym.Eq(n2y_5, 0.08*(N5 - n4y_5)), # Water consist of 8% mol/mol of remaining mixture
+    sym.Eq(n3y_5, 0.90*(N5 - n4y_5)), # Acetone consist of 90% mol/mol of remaining mixture
+    
+    # Assume they are all zero for now. 
+    sym.Eq(n1x_5, 0.0), 
+    sym.Eq(n2x_5, 0.0), 
+    sym.Eq(n3x_5, 0.0), 
+    
+    
+    # Flash separator to mixer
+    sym.Eq(n1y_6, n1y_4 - n1y_5),
+    sym.Eq(n2y_6, n2y_4 - n2y_5),
+    sym.Eq(n3y_6, n3y_4 - n3y_5),
+    sym.Eq(0, n4y_6),
+    
+    sym.Eq(n1x_6, n1x_4 - n1x_5),
+    sym.Eq(n2x_6, n2x_4 - n2x_5),
+    sym.Eq(n3x_6, n3x_4 - n3x_5)
+]
+
+
+specifications = vaporiser_spec +  reactor_spec + heat_ex_spec + flash_separ_spec
+
+soln = sym.solve(material_balances + specifications)
+
+for k in soln.keys():
+    print("Variable {0:4s}:  {1:8.2f}".format(str(k),round(soln[k],2)))
+
+
+
+absorber_spec = [
+    
+    # Injected water stream to absorber (S7)
+    sym.Eq(20, N7),
+    sym.Eq(20, n2x_7),
+    
+    # Outlet stream from Absorber to Storage Tank (Vapour Stream S9)
+    sym.Eq(N9, 0.97*N5),  # Flow rate is 97% of the absorber feed from flash seaprator
+    sym.Eq(n4y_9, 0.9015*N9), # (given)
+    sym.Eq(n3y_9, 0.065*N9), # (given)
+    sym.Eq(n2y_9, 0.033*N9), # (given)
+    sym.Eq(n1y_9, 0.0005*N9), # (given)
+    
+    # Assume they are all zero for now.
+    sym.Eq(n1x_9, 0.0), 
+    sym.Eq(n2x_9, 0.0), 
+    sym.Eq(n3x_9, 0.0), 
+    sym.Eq(n4x_9, 0.0), 
+
+    
+    # Outlet stream from Absorber to mixer (Liquid Stream S8)
+    sym.Eq(n1x_8, n1x_5 - n1x_9 ),
+    sym.Eq(n2x_8, n2x_7 + n2x_5 - n2x_9),
+    sym.Eq(n3x_8, n3x_5 - n3x_9),
+    sym.Eq(n4x_8, n4x_5 - n4x_9 ),
+    
+    sym.Eq(n1y_8, n1y_5 - n1y_9 ), 
+    sym.Eq(n2y_8, n1y_5 - n1y_9 ), 
+    sym.Eq(n3y_8, n1y_5 - n1y_9 ), 
+    sym.Eq(n4y_8, n1y_5 - n1y_9 )
+     
+]
+
+
+
+mixer_spec = [
+    sym.Eq(n1x_10, n1x_6 + n1x_8),
+    sym.Eq(n2x_10, n2x_6 + n2x_8),
+    sym.Eq(n3x_10, n3x_6 + n3x_8),
+    sym.Eq(n4x_10, n4x_6 + n4x_8),
+    
+    sym.Eq(n1y_10, n1x_6 + n1y_8),
+    sym.Eq(n2y_10, n2y_6 + n2y_8),
+    sym.Eq(n3y_10, n3y_6 + n3y_8),
+    sym.Eq(n4y_10, n4y_6 + n4y_8)
+]
+
+
+first_dist_spec = [
+    
+    
+]
+
+
+
+sec_dist_spec = [
+    
+]
+
+
+
+material_balances = []
+
+
+specifications = vaporiser_spec +  reactor_spec + heat_ex_spec + flash_separ_spec + absorber_spec + mixer_spec +  first_dist_spec + sec_dist_spec 
+
+
+
+
+equations = material_balances + specifications
+print("\n%d Equations = %d Material Balances + %d Specifications"     % (len(equations),len(material_balances),len(specifications)))
+
+print("\n%d Material Balances\n" % len(material_balances))
+for mb in material_balances:
+    print(mb)
+
+print("\n%d Specifications\n" % len(specifications))
+for spec in specifications:
+    print(spec)
+
+
+
+
+
+
+soln = sym.solve(material_balances + specifications)
+
+for k in soln.keys():
+    print("Variable {0:4s}:  {1:8.2f}".format(str(k),round(soln[k],2)))
+
+
+# In[189]:
+
+
+nVars = 0
+for s in stream_table:
+    for v in s:
+        nVars += 1
+        print("Stream: {0:2d}    Variable: {1:5s}".format(nVars,v.name))
+
+print("\n%d Extents of Reaction\n" % len(extents))
+for v in extents:
+    print("Extent: ", v.name)
+
+print("\n%d Variables = %d Stream Variables + %d Extents of Reaction \n"     % (len(variables),nVars,len(extents)))
+
+
+# In[ ]:
+
+
+equations = material_balances + specifications
+print("\n%d Equations = %d Material Balances + %d Specifications"     % (len(equations),len(material_balances),len(specifications)))
+
+print("\n%d Material Balances\n" % len(material_balances))
+for mb in material_balances:
+    print(mb)
+
+print("\n%d Specifications\n" % len(specifications))
+for spec in specifications:
+    print(spec)
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
+
+# Equations
+
+# In[190]:
+
+
+vaporiser = [
+    sym.Eq(0, n1x_2 + n1y_2 - n1x_1 - n1y_1),
+    sym.Eq(0, n2x_2 + n2y_2 - n2x_1 - n2y_1)]
+    
+
+
+# In[191]:
+
+
+reactor = [
+    sym.Eq(n3y_3, 0.9*n1y_2 / 2),
+    sym.Eq(n4y_3, 0.9*n1y_2 / 2)]
+
+
+# In[192]:
+
+
+material_balances = vaporiser + reactor
+for eqn in material_balances:
+    display(eqn)
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+# outsourced to another file
+# heat_exchanger = []
+
+
+# In[21]:
+
+
+stream_eqns = [];
+
+
+# In[ ]:
+
+
+stream_eqns.append(sym.Eq())
+stream_eqns.append()
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
