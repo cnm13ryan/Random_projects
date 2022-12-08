@@ -1,4 +1,4 @@
-# Random_projects
+# Random_problems
 ## Table of contents
 * [General info](#general-info)
 * [Projects](#projects)
