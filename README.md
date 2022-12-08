@@ -4,7 +4,7 @@
 * [Projects](#projects)
 
 ## General info
-The repositrory contains what I find interesting in general.
+The repositrory contains code snippets of small problem which highlights interesting techinques in general.
 There may exist some errors, or maybe there exist some better implementation.
 Anyway, feel free to leave me a message if there are any problems.
 	
