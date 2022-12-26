@@ -18,6 +18,7 @@ Projects include:
 *
 * [Calculating PI by MPI](#calculating-pi-by-mpi)
 * 
+* [Phase Equilibrium Calculations 2022 Jan Scenario 1]
 
 
 
