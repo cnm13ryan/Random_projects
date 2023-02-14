@@ -43,6 +43,7 @@ This is just a very naive implementation of MPI fundamentals
 
 ### Venturi Meter analysis
 ...
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/cnm13ryan/Random_projects/HEAD)
 
 
 
